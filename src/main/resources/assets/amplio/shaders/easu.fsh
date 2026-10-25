@@ -1,3 +1,5 @@
+#include "ffx.glsl"
+
 uniform sampler2D source;
 uniform vec2 inputSize;
 uniform vec2 outputSize;

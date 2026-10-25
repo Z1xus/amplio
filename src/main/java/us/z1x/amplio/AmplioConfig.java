@@ -13,8 +13,8 @@ public final class AmplioConfig {
 	private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("amplio.properties");
 
 	public UpscalerType upscaler = UpscalerType.FSR1;
-	// render resolution relative to the window, per axis
-	public float scale = 0.5F;
+	public Quality quality = Quality.PERFORMANCE;
+	public DlssModel dlssModel = DlssModel.CNN;
 	// rcas sharpness in stops, 0 is the sharpest
 	public float sharpness = 0.25F;
 
@@ -27,7 +27,8 @@ public final class AmplioConfig {
 			try (Reader reader = Files.newBufferedReader(PATH)) {
 				properties.load(reader);
 				config.upscaler = UpscalerType.valueOf(properties.getProperty("upscaler", config.upscaler.name()));
-				config.scale = Math.clamp(Float.parseFloat(properties.getProperty("scale", "0.5")), 0.25F, 1.0F);
+				config.quality = Quality.valueOf(properties.getProperty("quality", config.quality.name()));
+				config.dlssModel = DlssModel.valueOf(properties.getProperty("dlssModel", config.dlssModel.name()));
 				config.sharpness = Math.clamp(Float.parseFloat(properties.getProperty("sharpness", "0.25")), 0.0F, 2.0F);
 			} catch (IOException | IllegalArgumentException e) {
 				Amplio.LOGGER.warn("Failed to read {}, using defaults", PATH, e);
@@ -40,7 +41,8 @@ public final class AmplioConfig {
 	public void save() {
 		Properties properties = new Properties();
 		properties.setProperty("upscaler", upscaler.name());
-		properties.setProperty("scale", Float.toString(scale));
+		properties.setProperty("quality", quality.name());
+		properties.setProperty("dlssModel", dlssModel.name());
 		properties.setProperty("sharpness", Float.toString(sharpness));
 
 		try (Writer writer = Files.newBufferedWriter(PATH)) {

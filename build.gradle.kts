@@ -44,3 +44,19 @@ tasks.processResources {
         expand("version" to version)
     }
 }
+
+// local builds bundle the linux natives from native/build, release builds take every platform from ci artifacts
+val nativesDir = layout.buildDirectory.dir("natives")
+val bundleNatives by tasks.registering(Sync::class) {
+    from("native/build") { include("libamplio.so") }
+    from("native/external/DLSS/lib/Linux_x86_64/rel") { include("libnvidia-ngx-dlss.so.*") }
+    into(nativesDir.map { it.dir("natives/linux-x86_64") })
+    doLast {
+        val dir = destinationDir
+        File(dir, "index").writeText(dir.list()!!.filter { it != "index" }.sorted().joinToString("\n"))
+    }
+}
+
+sourceSets.main {
+    resources.srcDir(bundleNatives.map { nativesDir.get() })
+}

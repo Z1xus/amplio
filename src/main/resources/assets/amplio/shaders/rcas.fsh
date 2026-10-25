@@ -1,3 +1,5 @@
+#include "ffx.glsl"
+
 uniform sampler2D source;
 uniform float sharpness;
 

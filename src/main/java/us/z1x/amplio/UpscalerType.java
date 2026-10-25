@@ -2,5 +2,6 @@ package us.z1x.amplio;
 
 public enum UpscalerType {
 	OFF,
-	FSR1
+	FSR1,
+	DLSS
 }

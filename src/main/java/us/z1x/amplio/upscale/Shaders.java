@@ -13,22 +13,11 @@ final class Shaders {
 	private Shaders() {
 	}
 
-	// glsl 4.10 is the macos limit, and ffx_a.h's half packing helpers are unused here, so they map to stubs
-	private static final String HEADER = """
-		#version 410
-		#define A_GPU 1
-		#define A_GLSL 1
-		#define packHalf2x16 amplio_packHalf2x16
-		#define unpackHalf2x16 amplio_unpackHalf2x16
-		uint amplio_packHalf2x16(vec2 v) { return 0u; }
-		vec2 amplio_unpackHalf2x16(uint v) { return vec2(0.0); }
-		""";
-
-	// fragment shaders get the glsl header and ffx_a.h, and #include lines are resolved inline
+	// glsl 4.10 is the macos limit, #include lines are resolved inline
 	static int link(String vertex, String fragment) {
 		int program = GL20C.glCreateProgram();
 		int vs = compile(GL20C.GL_VERTEX_SHADER, read(vertex));
-		int fs = compile(GL20C.GL_FRAGMENT_SHADER, HEADER + read("ffx_a.h") + "\n" + resolve(read(fragment)));
+		int fs = compile(GL20C.GL_FRAGMENT_SHADER, "#version 410\n" + resolve(read(fragment)));
 		GL20C.glAttachShader(program, vs);
 		GL20C.glAttachShader(program, fs);
 		GL20C.glLinkProgram(program);
@@ -58,7 +47,7 @@ final class Shaders {
 		StringBuilder out = new StringBuilder();
 
 		for (String line : source.split("\n", -1)) {
-			out.append(line.startsWith("#include \"") ? read(line.substring(10, line.length() - 1)) : line).append('\n');
+			out.append(line.startsWith("#include \"") ? resolve(read(line.substring(10, line.length() - 1))) : line).append('\n');
 		}
 
 		return out.toString();

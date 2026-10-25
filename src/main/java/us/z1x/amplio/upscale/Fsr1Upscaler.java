@@ -2,6 +2,9 @@ package us.z1x.amplio.upscale;
 
 import net.minecraft.client.render.pipeline.RenderTarget;
 import net.minecraft.client.render.platform.GlStateManager;
+import us.z1x.amplio.Amplio;
+import us.z1x.amplio.Quality;
+import us.z1x.amplio.ScaledTarget;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL20C;
@@ -11,7 +14,7 @@ import org.lwjgl.opengl.GL41C;
 import java.nio.ByteBuffer;
 
 // amd fidelityfx super resolution 1: easu upscales into an intermediate texture, rcas sharpens it into the target
-public final class Fsr1Upscaler {
+public final class Fsr1Upscaler implements Upscaler {
 	private final int easu = Shaders.link("fullscreen.vsh", "easu.fsh");
 	private final int rcas = Shaders.link("fullscreen.vsh", "rcas.fsh");
 	private final int easuInputSize = GL20C.glGetUniformLocation(easu, "inputSize");
@@ -21,13 +24,37 @@ public final class Fsr1Upscaler {
 	private int texture;
 	private int width;
 	private int height;
+	private int renderWidth;
+	private int renderHeight;
 
 	public Fsr1Upscaler() {
 		GL41C.glProgramUniform1i(easu, GL20C.glGetUniformLocation(easu, "source"), 0);
 		GL41C.glProgramUniform1i(rcas, GL20C.glGetUniformLocation(rcas, "source"), 0);
 	}
 
-	public void upscale(RenderTarget source, RenderTarget target, float sharpness) {
+	@Override
+	public void prepare(int outputWidth, int outputHeight, Quality quality) {
+		renderWidth = Math.max(1, Math.round(outputWidth * quality.scale));
+		renderHeight = Math.max(1, Math.round(outputHeight * quality.scale));
+	}
+
+	@Override
+	public int renderWidth() {
+		return renderWidth;
+	}
+
+	@Override
+	public int renderHeight() {
+		return renderHeight;
+	}
+
+	@Override
+	public boolean temporal() {
+		return false;
+	}
+
+	@Override
+	public void upscale(ScaledTarget source, RenderTarget target) {
 		if (texture == 0 || width != target.width || height != target.height) {
 			resize(target.width, target.height);
 		}
@@ -49,13 +76,21 @@ public final class Fsr1Upscaler {
 		GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, target.frameBufferId);
 		GlStateManager.bindTexture(texture);
 		GL20C.glUseProgram(rcas);
-		GL20C.glUniform1f(rcasSharpness, sharpness);
+		GL20C.glUniform1f(rcasSharpness, Amplio.config.sharpness);
 		GL11C.glDrawArrays(GL11C.GL_TRIANGLES, 0, 3);
 
 		GL20C.glUseProgram(0);
 		GlStateManager.bindTexture(0);
 		GlStateManager.depthMask(true);
 		GlStateManager.enableDepthTest();
+	}
+
+	@Override
+	public void close() {
+		GL20C.glDeleteProgram(easu);
+		GL20C.glDeleteProgram(rcas);
+		GL30C.glDeleteFramebuffers(framebuffer);
+		GL11C.glDeleteTextures(texture);
 	}
 
 	private void resize(int width, int height) {
