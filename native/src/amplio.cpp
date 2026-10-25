@@ -85,6 +85,7 @@ struct Context {
     VkSemaphore vkReady = VK_NULL_HANDLE;
     uint32_t renderWidth = 0, renderHeight = 0;
     std::wstring dataPath;
+    std::vector<int64_t> exported;
 #ifdef _WIN32
     PFN_vkGetMemoryWin32HandleKHR getMemoryHandle = nullptr;
     PFN_vkGetSemaphoreWin32HandleKHR getSemaphoreHandle = nullptr;
@@ -419,6 +420,7 @@ int createImage(Context *context, SharedImage &shared, VkFormat format, uint32_t
 
     shared.resource = NVSDK_NGX_Create_ImageView_Resource_VK(shared.view, shared.image, view.subresourceRange, format, width, height, output);
     handle = exportMemory(context, shared.memory);
+    context->exported.push_back(handle);
     size = static_cast<int64_t>(requirements.size);
     return handle == -1 ? fail(context, "Failed to export image memory") : 1;
 }
@@ -433,6 +435,7 @@ int createSemaphore(Context *context, VkSemaphore &semaphore, int64_t &handle) {
     }
 
     handle = exportSemaphore(context, semaphore);
+    context->exported.push_back(handle);
     return handle == -1 ? fail(context, "Failed to export semaphore") : 1;
 }
 
@@ -590,6 +593,18 @@ AMPLIO_API int amplio_resize(Context *context, ResizeInfo *info) {
     }
 
     return submitAndWait(context, command);
+}
+
+// opengl takes ownership of imported fds, but win32 handles stay open until closed
+AMPLIO_API void amplio_close_handles(Context *context) {
+#ifdef _WIN32
+    for (int64_t handle : context->exported) {
+        if (handle != -1) {
+            CloseHandle(reinterpret_cast<HANDLE>(handle));
+        }
+    }
+#endif
+    context->exported.clear();
 }
 
 AMPLIO_API int amplio_evaluate(Context *context, const EvaluateInfo *info) {

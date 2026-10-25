@@ -38,7 +38,7 @@ public final class DlssUpscaler implements Upscaler {
 	private static final int[] NO_BUFFERS = {};
 
 	private final SharedLibrary library;
-	private final long create, error, query, resize, evaluate, destroy;
+	private final long create, error, query, resize, closeHandles, evaluate, destroy;
 	private final long context;
 	private final int program = Shaders.link("motion.vsh", "motion.fsh");
 	private final int prepareFramebuffer = GL30C.glGenFramebuffers();
@@ -69,6 +69,7 @@ public final class DlssUpscaler implements Upscaler {
 		error = library.getFunctionAddress("amplio_error");
 		query = library.getFunctionAddress("amplio_query");
 		resize = library.getFunctionAddress("amplio_resize");
+		closeHandles = library.getFunctionAddress("amplio_close_handles");
 		evaluate = library.getFunctionAddress("amplio_evaluate");
 		destroy = library.getFunctionAddress("amplio_destroy");
 
@@ -231,6 +232,8 @@ public final class DlssUpscaler implements Upscaler {
 			glReady = importSemaphore(info.getLong(112));
 			vkReady = importSemaphore(info.getLong(120));
 		}
+
+		JNI.invokePV(context, closeHandles);
 
 		GlStateManager.bindTexture(0);
 		GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, prepareFramebuffer);
