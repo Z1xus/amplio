@@ -46,13 +46,14 @@ public final class Amplio {
             return;
         }
 
-        windowTarget = minecraft.getRenderTarget();
-
+        // the target sets viewports while it is created, so it must exist before the viewport hook is armed
         if (lowTarget == null) {
             lowTarget = new ScaledTarget(width, height);
         } else if (lowTarget.width != width || lowTarget.height != height) {
             lowTarget.resize(width, height);
         }
+
+        windowTarget = minecraft.getRenderTarget();
 
         lowTarget.clearChannels = windowTarget.clearChannels;
         FrameState.begin(tickDelta, width, height, minecraft.width, upscaler.temporal());
