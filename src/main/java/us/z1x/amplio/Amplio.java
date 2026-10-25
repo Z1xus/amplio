@@ -85,12 +85,17 @@ public final class Amplio {
         target.bindWrite(true);
     }
 
-    public static int scaleViewportWidth(int width) {
-        return windowTarget != null && width == Minecraft.getInstance().width ? lowTarget.width : width;
+    public static boolean coversWindow(int x, int y, int width, int height) {
+        Minecraft minecraft = Minecraft.getInstance();
+        return windowTarget != null && x == 0 && y == 0 && width == minecraft.width && height == minecraft.height;
     }
 
-    public static int scaleViewportHeight(int height) {
-        return windowTarget != null && height == Minecraft.getInstance().height ? lowTarget.height : height;
+    public static int renderWidth() {
+        return lowTarget.width;
+    }
+
+    public static int renderHeight() {
+        return lowTarget.height;
     }
 
     // dlss falls back to fsr 1 for the session, a failing fsr 1 turns upscaling off
