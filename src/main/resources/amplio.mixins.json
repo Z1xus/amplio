@@ -9,8 +9,9 @@
   },
   "client": [
     "MinecraftAccessor",
-    "MixinCeleritasVideoOptionsController",
-    "MixinGameRenderer",
-    "MixinGlStateManager"
+    "MixinCameraJitter",
+    "MixinScaleViewport",
+    "MixinScaleWorld",
+    "MixinUpscalingOptions"
   ]
 }

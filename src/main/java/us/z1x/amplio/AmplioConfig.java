@@ -10,45 +10,45 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 public final class AmplioConfig {
-	private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("amplio.properties");
+    private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("amplio.properties");
 
-	public UpscalerType upscaler = UpscalerType.FSR1;
-	public Quality quality = Quality.PERFORMANCE;
-	public DlssModel dlssModel = DlssModel.CNN;
-	// rcas sharpness in stops, 0 is the sharpest
-	public float sharpness = 0.25F;
+    public UpscalerType upscaler = UpscalerType.FSR1;
+    public Quality quality = Quality.PERFORMANCE;
+    public DlssModel dlssModel = DlssModel.CNN;
+    // rcas sharpness in stops, 0 is the sharpest
+    public float sharpness = 0.25F;
 
-	public static AmplioConfig load() {
-		AmplioConfig config = new AmplioConfig();
+    public static AmplioConfig load() {
+        AmplioConfig config = new AmplioConfig();
 
-		if (Files.exists(PATH)) {
-			Properties properties = new Properties();
+        if (Files.exists(PATH)) {
+            Properties properties = new Properties();
 
-			try (Reader reader = Files.newBufferedReader(PATH)) {
-				properties.load(reader);
-				config.upscaler = UpscalerType.valueOf(properties.getProperty("upscaler", config.upscaler.name()));
-				config.quality = Quality.valueOf(properties.getProperty("quality", config.quality.name()));
-				config.dlssModel = DlssModel.valueOf(properties.getProperty("dlssModel", config.dlssModel.name()));
-				config.sharpness = Math.clamp(Float.parseFloat(properties.getProperty("sharpness", "0.25")), 0.0F, 2.0F);
-			} catch (IOException | IllegalArgumentException e) {
-				Amplio.LOGGER.warn("Failed to read {}, using defaults", PATH, e);
-			}
-		}
+            try (Reader reader = Files.newBufferedReader(PATH)) {
+                properties.load(reader);
+                config.upscaler = UpscalerType.valueOf(properties.getProperty("upscaler", config.upscaler.name()));
+                config.quality = Quality.valueOf(properties.getProperty("quality", config.quality.name()));
+                config.dlssModel = DlssModel.valueOf(properties.getProperty("dlssModel", config.dlssModel.name()));
+                config.sharpness = Math.clamp(Float.parseFloat(properties.getProperty("sharpness", "0.25")), 0.0F, 2.0F);
+            } catch (IOException | IllegalArgumentException e) {
+                Amplio.LOGGER.warn("Failed to read {}, using defaults", PATH, e);
+            }
+        }
 
-		return config;
-	}
+        return config;
+    }
 
-	public void save() {
-		Properties properties = new Properties();
-		properties.setProperty("upscaler", upscaler.name());
-		properties.setProperty("quality", quality.name());
-		properties.setProperty("dlssModel", dlssModel.name());
-		properties.setProperty("sharpness", Float.toString(sharpness));
+    public void save() {
+        Properties properties = new Properties();
+        properties.setProperty("upscaler", upscaler.name());
+        properties.setProperty("quality", quality.name());
+        properties.setProperty("dlssModel", dlssModel.name());
+        properties.setProperty("sharpness", Float.toString(sharpness));
 
-		try (Writer writer = Files.newBufferedWriter(PATH)) {
-			properties.store(writer, null);
-		} catch (IOException e) {
-			Amplio.LOGGER.warn("Failed to save {}", PATH, e);
-		}
-	}
+        try (Writer writer = Files.newBufferedWriter(PATH)) {
+            properties.store(writer, null);
+        } catch (IOException e) {
+            Amplio.LOGGER.warn("Failed to save {}", PATH, e);
+        }
+    }
 }

@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(Minecraft.class)
 public interface MinecraftAccessor {
-	@Accessor("renderTarget")
-	void amplio$setRenderTarget(RenderTarget target);
+    @Accessor("renderTarget")
+    void amplio$setRenderTarget(RenderTarget target);
 }

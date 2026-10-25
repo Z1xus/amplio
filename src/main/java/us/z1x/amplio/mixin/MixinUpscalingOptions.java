@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(value = CeleritasVideoOptionsController.class, remap = false)
-public class MixinCeleritasVideoOptionsController {
-	@ModifyVariable(method = "<init>", at = @At("HEAD"), argsOnly = true)
-	private static List<OptionPage> amplio$addOptionPage(List<OptionPage> pages) {
-		List<OptionPage> withAmplio = new ArrayList<>(pages);
-		withAmplio.add(AmplioOptionPage.create());
-		return withAmplio;
-	}
+public class MixinUpscalingOptions {
+    @ModifyVariable(method = "<init>", at = @At("HEAD"), argsOnly = true)
+    private static List<OptionPage> amplio$addOptionPage(List<OptionPage> pages) {
+        List<OptionPage> withAmplio = new ArrayList<>(pages);
+        withAmplio.add(AmplioOptionPage.create());
+        return withAmplio;
+    }
 }

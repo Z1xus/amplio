@@ -10,42 +10,42 @@ import java.nio.ByteBuffer;
 
 // the low resolution world target, with a depth texture instead of a renderbuffer so upscalers can sample depth
 public final class ScaledTarget extends RenderTarget {
-	// no initializer: the super constructor already ran createBuffers when field initializers would run
-	private int depthTexture;
+    // no initializer: the super constructor already ran createBuffers when field initializers would run
+    private int depthTexture;
 
-	public ScaledTarget(int width, int height) {
-		super(width, height, true);
-	}
+    public ScaledTarget(int width, int height) {
+        super(width, height, true);
+    }
 
-	public int getDepthTexture() {
-		return depthTexture;
-	}
+    public int getDepthTexture() {
+        return depthTexture;
+    }
 
-	@Override
-	public void createBuffers(int width, int height) {
-		super.createBuffers(width, height);
-		GL30C.glDeleteRenderbuffers(depthBufferId);
-		depthBufferId = -1;
+    @Override
+    public void createBuffers(int width, int height) {
+        super.createBuffers(width, height);
+        GL30C.glDeleteRenderbuffers(depthBufferId);
+        depthBufferId = -1;
 
-		depthTexture = GL11C.glGenTextures();
-		GlStateManager.bindTexture(depthTexture);
-		GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_NEAREST);
-		GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_NEAREST);
-		GL11C.glTexImage2D(GL11C.GL_TEXTURE_2D, 0, GL14C.GL_DEPTH_COMPONENT24, width, height, 0, GL11C.GL_DEPTH_COMPONENT, GL11C.GL_UNSIGNED_INT, (ByteBuffer) null);
-		GlStateManager.bindTexture(0);
-		GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, frameBufferId);
-		GL30C.glFramebufferTexture2D(GL30C.GL_FRAMEBUFFER, GL30C.GL_DEPTH_ATTACHMENT, GL11C.GL_TEXTURE_2D, depthTexture, 0);
-		clear();
-		unbindWrite();
-	}
+        depthTexture = GL11C.glGenTextures();
+        GlStateManager.bindTexture(depthTexture);
+        GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_NEAREST);
+        GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_NEAREST);
+        GL11C.glTexImage2D(GL11C.GL_TEXTURE_2D, 0, GL14C.GL_DEPTH_COMPONENT24, width, height, 0, GL11C.GL_DEPTH_COMPONENT, GL11C.GL_UNSIGNED_INT, (ByteBuffer) null);
+        GlStateManager.bindTexture(0);
+        GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, frameBufferId);
+        GL30C.glFramebufferTexture2D(GL30C.GL_FRAMEBUFFER, GL30C.GL_DEPTH_ATTACHMENT, GL11C.GL_TEXTURE_2D, depthTexture, 0);
+        clear();
+        unbindWrite();
+    }
 
-	@Override
-	public void destroyBuffers() {
-		if (depthTexture != 0) {
-			GL11C.glDeleteTextures(depthTexture);
-			depthTexture = 0;
-		}
+    @Override
+    public void destroyBuffers() {
+        if (depthTexture != 0) {
+            GL11C.glDeleteTextures(depthTexture);
+            depthTexture = 0;
+        }
 
-		super.destroyBuffers();
-	}
+        super.destroyBuffers();
+    }
 }

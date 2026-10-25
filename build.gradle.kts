@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "us.z1x"
-version = property("mod_version")!!
+version = "${property("mod_version")}+${property("minecraft_version")}"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 

@@ -6,9 +6,6 @@
   "environment": "client",
   "description": "DLSS and FSR upscaling for Minecraft 1.8.9",
   "authors": ["Z1xus"],
-  "entrypoints": {
-    "client": ["us.z1x.amplio.Amplio"]
-  },
   "depends": {
     "minecraft": "1.8.9",
     "pylon": "*"
