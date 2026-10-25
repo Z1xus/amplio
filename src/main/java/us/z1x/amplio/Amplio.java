@@ -24,6 +24,11 @@ public final class Amplio {
     }
 
     public static void beginWorld(float tickDelta) {
+        // without a shader pack the game is cpu bound, so upscaling only adds its own cost
+        if (!ShaderPacks.inUse()) {
+            return;
+        }
+
         Upscaler upscaler = upscaler();
         if (upscaler == null) {
             return;
