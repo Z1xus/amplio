@@ -44,6 +44,9 @@ jobs:
           cache: true
       - name: Fetch the DLSS SDK
         shell: bash
+        # git bash would rewrite the leading slash of the sparse patterns into a windows path
+        env:
+          MSYS_NO_PATHCONV: 1
         run: |
           git clone --filter=blob:none --sparse --branch "$DLSS_REF" https://github.com/NVIDIA/DLSS.git native/external/DLSS
           git -C native/external/DLSS sparse-checkout set --no-cone /include/ /lib/Windows_x86_64/x64/nvsdk_ngx_s.lib /lib/Windows_x86_64/rel/nvngx_dlss.dll
