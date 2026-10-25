@@ -171,7 +171,7 @@ public final class DlssUpscaler implements Upscaler {
 			// struct EvaluateInfo { float jitterX, jitterY, frameTime, reset; }
 			ByteBuffer info = stack.calloc(16);
 			info.putFloat(0, FrameState.jitterX).putFloat(4, FrameState.jitterY)
-				.putFloat(8, lastFrame == 0 ? 16.0F : (now - lastFrame) / 1.0e6F).putFloat(12, reset ? 1.0F : 0.0F);
+				.putFloat(8, lastFrame == 0 ? 16.0F : (now - lastFrame) / 1.0e6F).putFloat(12, reset || FrameState.reset ? 1.0F : 0.0F);
 			JNI.invokePPI(context, MemoryUtil.memAddress(info), evaluate);
 		}
 

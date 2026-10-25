@@ -15,12 +15,16 @@ public final class FrameState {
 	public static float jitterX;
 	public static float jitterY;
 	public static boolean jitter;
+	// set when the temporal history no longer matches the scene: a teleport, a new world or a skipped frame
+	public static boolean reset = true;
 
 	private static int width;
 	private static int height;
 	private static int index;
 	private static double cameraX, cameraY, cameraZ;
 	private static double previousX, previousY, previousZ;
+	private static Entity lastCamera;
+	private static long lastFrame;
 
 	private FrameState() {
 	}
@@ -47,6 +51,12 @@ public final class FrameState {
 		cameraDelta[0] = (float) (cameraX - previousX);
 		cameraDelta[1] = (float) (cameraY - previousY);
 		cameraDelta[2] = (float) (cameraZ - previousZ);
+
+		long now = System.nanoTime();
+		reset = camera != lastCamera || now - lastFrame > 250_000_000L
+			|| cameraDelta[0] * cameraDelta[0] + cameraDelta[1] * cameraDelta[1] + cameraDelta[2] * cameraDelta[2] > 64.0F;
+		lastCamera = camera;
+		lastFrame = now;
 	}
 
 	public static void end() {

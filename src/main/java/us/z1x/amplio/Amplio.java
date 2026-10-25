@@ -19,6 +19,7 @@ public final class Amplio implements ClientModInitializer {
 	private static Upscaler upscaler;
 	private static UpscalerType active = UpscalerType.OFF;
 	private static boolean dlssFailed;
+	private static boolean disabled;
 
 	@Override
 	public void onInitializeClient() {
@@ -32,7 +33,14 @@ public final class Amplio implements ClientModInitializer {
 		}
 
 		Minecraft minecraft = Minecraft.getInstance();
-		upscaler.prepare(minecraft.width, minecraft.height, config.quality);
+
+		try {
+			upscaler.prepare(minecraft.width, minecraft.height, config.quality);
+		} catch (RuntimeException e) {
+			fail(e);
+			return;
+		}
+
 		int width = upscaler.renderWidth();
 		int height = upscaler.renderHeight();
 
@@ -63,7 +71,13 @@ public final class Amplio implements ClientModInitializer {
 		RenderTarget target = windowTarget;
 		windowTarget = null;
 		((MinecraftAccessor) Minecraft.getInstance()).amplio$setRenderTarget(target);
-		upscaler.upscale(lowTarget, target);
+
+		try {
+			upscaler.upscale(lowTarget, target);
+		} catch (RuntimeException e) {
+			fail(e);
+		}
+
 		FrameState.end();
 		target.bindWrite(true);
 	}
@@ -76,9 +90,29 @@ public final class Amplio implements ClientModInitializer {
 		return windowTarget != null && height == Minecraft.getInstance().height ? lowTarget.height : height;
 	}
 
-	// swaps the upscaler when the setting changes, a failed dlss start falls back to fsr 1 for the session
+	// dlss falls back to fsr 1 for the session, a failing fsr 1 turns upscaling off
+	private static void fail(RuntimeException e) {
+		LOGGER.error("{} failed, falling back", active, e);
+
+		if (active == UpscalerType.DLSS) {
+			dlssFailed = true;
+		} else {
+			disabled = true;
+		}
+
+		try {
+			upscaler.close();
+		} catch (RuntimeException ignored) {
+			// the upscaler is already broken, its resources go away with the context
+		}
+
+		upscaler = null;
+		active = UpscalerType.OFF;
+	}
+
+	// swaps the upscaler when the setting changes
 	private static Upscaler upscaler() {
-		UpscalerType wanted = config.upscaler == UpscalerType.DLSS && dlssFailed ? UpscalerType.FSR1 : config.upscaler;
+		UpscalerType wanted = disabled ? UpscalerType.OFF : config.upscaler == UpscalerType.DLSS && dlssFailed ? UpscalerType.FSR1 : config.upscaler;
 
 		if (wanted != active) {
 			if (upscaler != null) {
