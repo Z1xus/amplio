@@ -2,12 +2,14 @@
   "required": true,
   "minVersion": "0.8",
   "package": "us.z1x.amplio.mixin",
+  "plugin": "us.z1x.amplio.mixin.AmplioMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
     "MinecraftAccessor",
+    "MixinCeleritasVideoOptionsController",
     "MixinGameRenderer",
     "MixinGlStateManager"
   ]
