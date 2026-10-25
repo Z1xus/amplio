@@ -7,7 +7,8 @@ import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL41C;
-import org.lwjgl.opengl.GL42C;
+
+import java.nio.ByteBuffer;
 
 // amd fidelityfx super resolution 1: easu upscales into an intermediate texture, rcas sharpens it into the target
 public final class Fsr1Upscaler {
@@ -67,7 +68,9 @@ public final class Fsr1Upscaler {
 
 		texture = GL11C.glGenTextures();
 		GlStateManager.bindTexture(texture);
-		GL42C.glTexStorage2D(GL11C.GL_TEXTURE_2D, 1, GL11C.GL_RGBA8, width, height);
+		GL11C.glTexImage2D(GL11C.GL_TEXTURE_2D, 0, GL11C.GL_RGBA8, width, height, 0, GL11C.GL_RGBA, GL11C.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+		GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_NEAREST);
+		GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_NEAREST);
 		GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, framebuffer);
 		GL30C.glFramebufferTexture2D(GL30C.GL_FRAMEBUFFER, GL30C.GL_COLOR_ATTACHMENT0, GL11C.GL_TEXTURE_2D, texture, 0);
 	}

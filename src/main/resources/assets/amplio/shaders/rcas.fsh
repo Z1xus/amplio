@@ -10,8 +10,7 @@ void FsrRcasInputF(inout AF1 r, inout AF1 g, inout AF1 b) {}
 #include "ffx_fsr1.h"
 
 void main() {
-	AU4 con;
-	FsrRcasCon(con, sharpness);
+	AU4 con = AU4(floatBitsToUint(exp2(-sharpness)), 0u, 0u, 0u);
 
 	AF3 color;
 	FsrRcasF(color.r, color.g, color.b, AU2(gl_FragCoord.xy), con);

@@ -1,4 +1,4 @@
-#version 450
+#version 410
 
 void main() {
 	vec2 position = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
