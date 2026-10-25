@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 
-// the amplio page in argentum's video settings
 public final class AmplioOptionPage {
     private static final OptionStorage<AmplioConfig> STORAGE = new OptionStorage<>() {
         @Override

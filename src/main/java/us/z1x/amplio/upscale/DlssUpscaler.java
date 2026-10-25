@@ -31,7 +31,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-// nvidia dlss, evaluated by the native vulkan bridge on images shared with this opengl context
 public final class DlssUpscaler implements Upscaler {
     private static final int COLOR = 0, DEPTH = 1, MOTION = 2, OUTPUT = 3, IMAGES = 4;
     private static final int[] FORMATS = {GL11C.GL_RGBA8, GL30C.GL_R32F, GL30C.GL_RG16F, GL11C.GL_RGBA8};

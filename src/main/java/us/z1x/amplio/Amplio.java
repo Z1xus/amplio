@@ -118,7 +118,6 @@ public final class Amplio {
         active = UpscalerType.OFF;
     }
 
-    // swaps the upscaler when the setting changes
     private static Upscaler upscaler() {
         UpscalerType wanted = CONFIG.upscaler;
 

@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-// copies the bundled native libraries for this platform out of the jar, once per mod version
 final class Natives {
     private Natives() {
     }

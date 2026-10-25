@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import org.lwjgl.opengl.GL11;
 
-// camera matrices and sub-pixel jitter for temporal upscalers, captured from the fixed function matrix stacks
 public final class FrameState {
     public static final float[] projection = new float[16];
     public static final float[] jitteredProjection = new float[16];

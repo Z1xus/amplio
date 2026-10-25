@@ -12,7 +12,6 @@ public interface Upscaler {
 
     int renderHeight();
 
-    // temporal upscalers need a sub-pixel jitter and motion vectors every frame
     boolean temporal();
 
     void upscale(ScaledTarget source, RenderTarget target);
