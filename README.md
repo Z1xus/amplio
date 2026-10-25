@@ -1,3 +1,3 @@
 # Amplio
 
-FSR and DLSS for Minecraft 1.8.9. Works with [Lucerna](https://modrinth.com/mod/lucerna) shaders.
+DLSS and FSR upscaling addon for [Lucerna](https://modrinth.com/mod/lucerna) shaders on Minecraft 1.8.9.
