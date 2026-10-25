@@ -45,15 +45,21 @@ tasks.processResources {
     }
 }
 
-// local builds bundle the linux natives from native/build, release builds take every platform from ci artifacts
+// ci passes -PnativesDir with one folder per platform, local builds bundle the linux natives from native/build
 val nativesDir = layout.buildDirectory.dir("natives")
+val prebuiltNatives = providers.gradleProperty("nativesDir")
 val bundleNatives by tasks.registering(Sync::class) {
-    from("native/build") { include("libamplio.so") }
-    from("native/external/DLSS/lib/Linux_x86_64/rel") { include("libnvidia-ngx-dlss.so.*") }
-    into(nativesDir.map { it.dir("natives/linux-x86_64") })
+    if (prebuiltNatives.isPresent) {
+        from(prebuiltNatives) { into("natives") }
+    } else {
+        from("native/build") { include("libamplio.so"); into("natives/linux-x86_64") }
+        from("native/external/DLSS/lib/Linux_x86_64/rel") { include("libnvidia-ngx-dlss.so.*"); into("natives/linux-x86_64") }
+    }
+    into(nativesDir)
     doLast {
-        val dir = destinationDir
-        File(dir, "index").writeText(dir.list()!!.filter { it != "index" }.sorted().joinToString("\n"))
+        File(destinationDir, "natives").listFiles()!!.filter { it.isDirectory }.forEach { platform ->
+            File(platform, "index").writeText(platform.list()!!.filter { it != "index" }.sorted().joinToString("\n"))
+        }
     }
 }
 

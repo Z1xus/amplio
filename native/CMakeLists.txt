@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# nvsdk_ngx_s.lib is built against the static msvc runtime
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 set(DLSS_SDK "${CMAKE_CURRENT_SOURCE_DIR}/external/DLSS" CACHE PATH "NVIDIA DLSS SDK")
 # release builds bundle the c++ runtime so the library loads on any distro
 option(AMPLIO_STATIC_RUNTIME "Link the C++ runtime statically" OFF)

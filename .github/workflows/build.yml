@@ -1,0 +1,81 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+env:
+  DLSS_REF: v310.9.16
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    # glibc 2.28 keeps the library loadable on older distros
+    container: quay.io/pypa/manylinux_2_28_x86_64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: |
+          dnf install -y vulkan-headers vulkan-loader-devel
+          /opt/python/cp312-cp312/bin/pip install cmake ninja
+          echo /opt/python/cp312-cp312/bin >> "$GITHUB_PATH"
+      - name: Fetch the DLSS SDK
+        run: |
+          git clone --filter=blob:none --sparse --branch "$DLSS_REF" https://github.com/NVIDIA/DLSS.git native/external/DLSS
+          git -C native/external/DLSS sparse-checkout set --no-cone /include/ /lib/Linux_x86_64/
+      - name: Build
+        run: |
+          cmake -S native -B native/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DAMPLIO_STATIC_RUNTIME=ON
+          cmake --build native/build
+          mkdir -p natives/linux-x86_64
+          cp native/build/libamplio.so native/external/DLSS/lib/Linux_x86_64/rel/libnvidia-ngx-dlss.so.* natives/linux-x86_64/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: natives-linux-x86_64
+          path: natives
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: humbletim/install-vulkan-sdk@v1.2
+        with:
+          version: 1.4.309.0
+          cache: true
+      - name: Fetch the DLSS SDK
+        shell: bash
+        run: |
+          git clone --filter=blob:none --sparse --branch "$DLSS_REF" https://github.com/NVIDIA/DLSS.git native/external/DLSS
+          git -C native/external/DLSS sparse-checkout set --no-cone /include/ /lib/Windows_x86_64/x64/nvsdk_ngx_s.lib /lib/Windows_x86_64/rel/nvngx_dlss.dll
+      - name: Build
+        shell: bash
+        run: |
+          cmake -S native -B native/build -A x64
+          cmake --build native/build --config Release
+          mkdir -p natives/windows-x86_64
+          cp native/build/Release/amplio.dll native/external/DLSS/lib/Windows_x86_64/rel/nvngx_dlss.dll natives/windows-x86_64/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: natives-windows-x86_64
+          path: natives
+
+  jar:
+    needs: [linux, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: natives-*
+          merge-multiple: true
+          path: natives
+      - name: Build
+        run: ./gradlew build -PnativesDir="$PWD/natives"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: amplio
+          path: build/libs/*.jar
