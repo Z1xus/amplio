@@ -12,10 +12,11 @@ set(DLSS_SDK "${CMAKE_CURRENT_SOURCE_DIR}/external/DLSS" CACHE PATH "NVIDIA DLSS
 option(AMPLIO_STATIC_RUNTIME "Link the C++ runtime statically" OFF)
 
 find_package(Vulkan REQUIRED)
+find_package(Threads REQUIRED)
 
 add_library(amplio SHARED src/amplio.cpp)
 target_include_directories(amplio PRIVATE "${DLSS_SDK}/include")
-target_link_libraries(amplio PRIVATE Vulkan::Vulkan)
+target_link_libraries(amplio PRIVATE Vulkan::Vulkan Threads::Threads)
 
 if(WIN32)
     target_link_libraries(amplio PRIVATE "${DLSS_SDK}/lib/Windows_x86_64/x64/nvsdk_ngx_s.lib")
