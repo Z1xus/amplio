@@ -32,7 +32,8 @@ constexpr const char *SEMAPHORE_EXTENSION = VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSI
 namespace {
 // identifies amplio to the driver, any guid shaped string works for custom engines
 constexpr const char *PROJECT_ID = "6f2a9d3e-4b1c-4e8a-9f07-a3c5d1e2b4f6";
-constexpr int FRAMES = 2;
+// matches the frames the opengl driver queues, so the render thread never waits on a fence while the gpu is the limit
+constexpr int FRAMES = 3;
 
 enum Image { COLOR, DEPTH, MOTION, OUTPUT, IMAGE_COUNT };
 constexpr std::array<VkFormat, IMAGE_COUNT> FORMATS = {VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R32_SFLOAT, VK_FORMAT_R16G16_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM};
