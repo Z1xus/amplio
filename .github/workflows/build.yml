@@ -2,7 +2,12 @@ name: build
 
 on:
   push:
+    branches: [main]
+    tags: ['v*']
   pull_request:
+
+permissions:
+  contents: read
 
 env:
   DLSS_REF: v310.9.16
@@ -13,7 +18,9 @@ jobs:
     # glibc 2.28 keeps the library loadable on older distros
     container: quay.io/pypa/manylinux_2_28_x86_64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install tools
         run: |
           dnf install -y vulkan-headers vulkan-loader-devel
@@ -29,16 +36,19 @@ jobs:
           cmake --build native/build
           mkdir -p natives/linux-x86_64
           cp native/build/libamplio.so native/external/DLSS/lib/Linux_x86_64/rel/libnvidia-ngx-dlss.so.* natives/linux-x86_64/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: natives-linux-x86_64
           path: natives
+          if-no-files-found: error
 
   windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: humbletim/install-vulkan-sdk@v1.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: humbletim/install-vulkan-sdk@30ba978f977e81b72d091fc8888feb1fb26f9aff # v1.2
         with:
           version: 1.4.309.0
           cache: true
@@ -57,28 +67,88 @@ jobs:
           cmake --build native/build --config Release
           mkdir -p natives/windows-x86_64
           cp native/build/Release/amplio.dll native/external/DLSS/lib/Windows_x86_64/rel/nvngx_dlss.dll natives/windows-x86_64/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: natives-windows-x86_64
           path: natives
+          if-no-files-found: error
 
   jar:
     needs: [linux, windows]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version: 25
-      - uses: actions/download-artifact@v4
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - name: Check the tag matches the mod version
+        if: github.ref_type == 'tag'
+        run: grep -qx "mod_version=${GITHUB_REF_NAME#v}" gradle.properties
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: natives-*
           merge-multiple: true
           path: natives
       - name: Build
         run: ./gradlew build -PnativesDir="$PWD/natives"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        if: github.event_name != 'pull_request'
+        with:
+          subject-path: build/libs/*.jar
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: amplio
           path: build/libs/*.jar
+          if-no-files-found: error
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: jar
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: amplio
+      - name: Publish the GitHub release
+        id: release
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v heading="## $version" '$0 == heading { found = 1; next } /^## / { found = 0 } found' CHANGELOG.md > notes.md
+          grep -q . notes.md
+          gh release create "$GITHUB_REF_NAME" ./*.jar --verify-tag --title "$GITHUB_REF_NAME" --notes-file notes.md
+          {
+            echo "version=$version"
+            echo 'notes<<EOF'
+            cat notes.md
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+      - name: Publish to Modrinth
+        uses: cloudnode-pro/modrinth-publish@3870f66007063f03fb70118ca9eddbc09a4ba666 # v2.5.2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project: ${{ vars.MODRINTH_PROJECT_ID }}
+          name: Amplio ${{ steps.release.outputs.version }}
+          version: ${{ steps.release.outputs.version }}
+          changelog: ${{ steps.release.outputs.notes }}
+          loaders: ornithe
+          game-versions: 1.8.9
+          environment: client_only
+          files: amplio-${{ steps.release.outputs.version }}+1.8.9.jar
+          dependencies: |-
+            [{"project_id": "QRMV06RW", "dependency_type": "required"}, {"project_id": "wx17t6U9", "dependency_type": "required"}]
