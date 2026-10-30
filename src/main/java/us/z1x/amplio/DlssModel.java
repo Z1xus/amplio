@@ -1,9 +1,9 @@
 package us.z1x.amplio;
 
-// the cnn model costs about a third of the transformer on an rtx 4060, values from NVSDK_NGX_DLSS_Hint_Render_Preset
+// values from NVSDK_NGX_DLSS_Hint_Render_Preset: preset e costs under half of k on an rtx 4060, and the performance mode default m costs a third more than k
 public enum DlssModel {
     CNN(5),
-    TRANSFORMER(0);
+    TRANSFORMER(11);
 
     public final int preset;
 

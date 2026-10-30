@@ -575,7 +575,6 @@ AMPLIO_API int amplio_resize(Context *context, ResizeInfo *info) {
     create.Feature.InPerfQualityValue = static_cast<NVSDK_NGX_PerfQuality_Value>(info->quality);
     create.InFeatureCreateFlags = NVSDK_NGX_DLSS_Feature_Flags_MVLowRes | NVSDK_NGX_DLSS_Feature_Flags_AutoExposure;
 
-    // 0 keeps the runtime's default preset per quality mode
     for (const char *key : {NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_DLAA, NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Quality, NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Balanced,
              NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Performance, NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_UltraPerformance}) {
         NVSDK_NGX_Parameter_SetUI(context->parameters, key, static_cast<unsigned int>(info->preset));
