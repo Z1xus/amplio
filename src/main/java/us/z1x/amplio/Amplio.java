@@ -55,6 +55,7 @@ public final class Amplio {
 
         windowTarget = minecraft.getRenderTarget();
 
+        lowTarget.forgetSceneDepth();
         lowTarget.clearChannels = windowTarget.clearChannels;
         FrameState.begin(tickDelta, width, height, minecraft.width, upscaler.temporal());
         ((MinecraftAccessor) minecraft).amplio$setRenderTarget(lowTarget);
@@ -78,6 +79,12 @@ public final class Amplio {
 
         FrameState.end();
         target.bindWrite(true);
+    }
+
+    public static void saveSceneDepth() {
+        if (FrameState.jitter) {
+            lowTarget.saveSceneDepth();
+        }
     }
 
     public static boolean coversWindow(int x, int y, int width, int height) {

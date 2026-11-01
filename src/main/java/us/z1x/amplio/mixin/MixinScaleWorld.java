@@ -14,6 +14,12 @@ public class MixinScaleWorld {
         Amplio.beginWorld(tickDelta);
     }
 
+    // vanilla clears depth for the hand here, lucerna skips this with a shader pack and keeps the hand in the scene depth
+    @Inject(method = "render(IFJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/platform/GlStateManager;clear(I)V", ordinal = 1))
+    private void amplio$saveSceneDepth(int anaglyphRenderPass, float tickDelta, long renderTimeLimit, CallbackInfo ci) {
+        Amplio.saveSceneDepth();
+    }
+
     @Inject(method = "render(FJ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;renderWorld(FJ)V", shift = At.Shift.AFTER))
     private void amplio$endWorld(float tickDelta, long startTime, CallbackInfo ci) {
         Amplio.endWorld();

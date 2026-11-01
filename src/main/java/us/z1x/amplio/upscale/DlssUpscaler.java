@@ -46,7 +46,7 @@ public final class DlssUpscaler implements Upscaler {
     private final int[] textures = new int[IMAGES];
     private final int[] memoryObjects = new int[IMAGES];
     private final int[] layouts = {EXTSemaphore.GL_LAYOUT_GENERAL_EXT, EXTSemaphore.GL_LAYOUT_GENERAL_EXT, EXTSemaphore.GL_LAYOUT_GENERAL_EXT, EXTSemaphore.GL_LAYOUT_GENERAL_EXT};
-    private final int renderSize, projection, jitteredProjection, modelView, previousProjection, previousModelView, cameraDelta;
+    private final int renderSize, projection, jitteredProjection, modelView, previousProjection, previousModelView, cameraDelta, separateHand;
     private int glReady;
     private int vkReady;
     private int outputWidth, outputHeight, renderWidth, renderHeight;
@@ -95,8 +95,10 @@ public final class DlssUpscaler implements Upscaler {
         previousProjection = GL20C.glGetUniformLocation(program, "previousProjection");
         previousModelView = GL20C.glGetUniformLocation(program, "previousModelView");
         cameraDelta = GL20C.glGetUniformLocation(program, "cameraDelta");
+        separateHand = GL20C.glGetUniformLocation(program, "separateHand");
         GL41C.glProgramUniform1i(program, GL20C.glGetUniformLocation(program, "color"), 0);
         GL41C.glProgramUniform1i(program, GL20C.glGetUniformLocation(program, "depth"), 1);
+        GL41C.glProgramUniform1i(program, GL20C.glGetUniformLocation(program, "handDepth"), 2);
     }
 
     @Override
@@ -157,8 +159,11 @@ public final class DlssUpscaler implements Upscaler {
         GL20C.glUniformMatrix4fv(previousProjection, false, FrameState.previousProjection);
         GL20C.glUniformMatrix4fv(previousModelView, false, FrameState.previousModelView);
         GL20C.glUniform3fv(cameraDelta, FrameState.cameraDelta);
-        GlStateManager.activeTexture(GL13C.GL_TEXTURE1);
+        GL20C.glUniform1i(separateHand, source.isSceneDepthSaved() ? 1 : 0);
+        GlStateManager.activeTexture(GL13C.GL_TEXTURE2);
         GlStateManager.bindTexture(source.getDepthTexture());
+        GlStateManager.activeTexture(GL13C.GL_TEXTURE1);
+        GlStateManager.bindTexture(source.getSceneDepthTexture());
         GlStateManager.activeTexture(GL13C.GL_TEXTURE0);
         GlStateManager.bindTexture(source.colorTextureId);
         GL11C.glDrawArrays(GL11C.GL_TRIANGLES, 0, 3);

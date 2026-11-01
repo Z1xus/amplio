@@ -11,6 +11,7 @@ public final class FrameState {
     public static final float[] previousProjection = new float[16];
     public static final float[] previousModelView = new float[16];
     public static final float[] cameraDelta = new float[3];
+    private static final float[] passProjection = new float[16];
     public static float jitterX;
     public static float jitterY;
     public static boolean jitter;
@@ -65,21 +66,31 @@ public final class FrameState {
     }
 
     public static void captureProjection() {
-        GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projection);
-    }
-
-    public static void captureModelView() {
-        GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelView);
-    }
-
-    // shifts the projection by the jitter: clip.xy += jitter * clip.w, with the matrix in column major order
-    public static void applyJitter() {
         if (!jitter) {
             return;
         }
 
-        float[] m = jitteredProjection;
-        GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, m);
+        GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projection);
+        System.arraycopy(projection, 0, jitteredProjection, 0, 16);
+        loadJittered(jitteredProjection);
+    }
+
+    public static void captureModelView() {
+        if (jitter) {
+            GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelView);
+        }
+    }
+
+    // the sky, clouds and hand use their own projections, so jitteredProjection keeps the world's
+    public static void applyJitter() {
+        if (jitter) {
+            GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, passProjection);
+            loadJittered(passProjection);
+        }
+    }
+
+    // shifts the projection by the jitter: clip.xy += jitter * clip.w, with the matrix in column major order
+    private static void loadJittered(float[] m) {
         float x = 2.0F * jitterX / width;
         float y = 2.0F * jitterY / height;
 

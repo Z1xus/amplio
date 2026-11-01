@@ -12,7 +12,6 @@ public class MixinCameraJitter {
     @Inject(method = "setupCamera", at = @At(value = "INVOKE", target = "Lorg/lwjgl/util/glu/Project;gluPerspective(FFFF)V", shift = At.Shift.AFTER))
     private void amplio$captureProjection(float tickDelta, int anaglyphRenderPass, CallbackInfo ci) {
         FrameState.captureProjection();
-        FrameState.applyJitter();
     }
 
     @Inject(method = "setupCamera", at = @At("TAIL"))
